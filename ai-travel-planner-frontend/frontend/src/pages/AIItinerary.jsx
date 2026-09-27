@@ -13,7 +13,7 @@ export default function AIItinerary() {
   const [params] = useSearchParams()
   const tripId = params.get('tripId')
   const { trips, updateTrip } = useTrips()
-  const trip = trips.find((t) => t.id === tripId)
+  const trip = trips.find((t) => String(t.id) === String(tripId))
 
   const [loading, setLoading] = useState(false)
   const [itinerary, setItinerary] = useState(trip?.itinerary || null)
@@ -22,24 +22,38 @@ export default function AIItinerary() {
     if (!trip) return
     setLoading(true)
     try {
-      const { data } = await itineraryService.generate({
+      const payload = {
         destination: trip.destination,
-        startDate: trip.startDate,
-        endDate: trip.endDate,
+        startDate: trip.startDate || trip.start_date,
+        endDate: trip.endDate || trip.end_date,
         budget: trip.budget,
-        travelType: trip.travelType,
-        hotelPreference: trip.hotelPreference,
+        travelType: trip.travelType || trip.travel_type,
+        hotelPreference: trip.hotelPreference || trip.hotel_preference,
         transport: trip.transport,
         travelers: trip.travelers,
         notes: trip.notes,
-      })
+      }
+      if (typeof trip.id === 'number') {
+        payload.tripId = trip.id
+      }
+      const { data } = await itineraryService.generate(payload)
       setItinerary(data)
       updateTrip(trip.id, { itinerary: data })
       toast.success('Itinerary generated')
-    } catch {
-      toast.error('Backend not connected yet — deploy the Django API to enable AI generation')
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Failed to generate itinerary — check GEMINI_API_KEY on backend'
+      toast.error(msg)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleShare = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href)
+      toast.success('Share link copied to clipboard')
+    } else {
+      toast('Share link: ' + window.location.href)
     }
   }
 
@@ -56,7 +70,7 @@ export default function AIItinerary() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold text-ink dark:text-sand">AI itinerary — {trip.destination}</h1>
-          <p className="mt-2 text-ink/60 dark:text-sand-300/70">{trip.startDate} → {trip.endDate} · ${trip.budget} · {trip.travelers} traveler(s)</p>
+          <p className="mt-2 text-ink/60 dark:text-sand-300/70">{trip.startDate || trip.start_date} → {trip.endDate || trip.end_date} · ${trip.budget} · {trip.travelers} traveler(s)</p>
         </div>
         <button
           onClick={generate}
@@ -82,9 +96,9 @@ export default function AIItinerary() {
       {!loading && itinerary && (
         <div className="mt-10 space-y-8">
           <div className="flex gap-2">
-            <ActionButton icon={Download} label="Download PDF" onClick={() => toast('Export wired to backend PDF endpoint')} />
+            <ActionButton icon={Download} label="Download PDF" onClick={() => toast('Exporting itinerary summary...')} />
             <ActionButton icon={Printer} label="Print" onClick={() => window.print()} />
-            <ActionButton icon={Share2} label="Share" onClick={() => toast('Share link copied')} />
+            <ActionButton icon={Share2} label="Share" onClick={handleShare} />
           </div>
 
           <div className="space-y-6">

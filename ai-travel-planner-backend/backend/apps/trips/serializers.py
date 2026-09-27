@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import serializers
 from .models import Trip, Itinerary
 
@@ -47,10 +48,10 @@ class BudgetCalculatorInputSerializer(serializers.Serializer):
     days = serializers.IntegerField(min_value=1)
     travelers = serializers.IntegerField(min_value=1)
     hotel_tier = serializers.ChoiceField(choices=['Budget', 'Standard', 'Luxury'], default='Standard')
-    food_per_day = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0, default=35)
-    travel_cost = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0, default=400)
-    tickets = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0, default=150)
-    misc = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0, default=100)
+    food_per_day = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0'), default=35)
+    travel_cost = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0'), default=400)
+    tickets = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0'), default=150)
+    misc = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0'), default=100)
 
 
 class GenerateItineraryInputSerializer(serializers.Serializer):
@@ -58,7 +59,7 @@ class GenerateItineraryInputSerializer(serializers.Serializer):
     destination = serializers.CharField(max_length=150)
     startDate = serializers.DateField()
     endDate = serializers.DateField()
-    budget = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=0)
+    budget = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0'))
     travelers = serializers.IntegerField(min_value=1, default=1)
     travelType = serializers.CharField(max_length=20, default='Solo', required=False)
     hotelPreference = serializers.CharField(max_length=20, default='Standard', required=False)

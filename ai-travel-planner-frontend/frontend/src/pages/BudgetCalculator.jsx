@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { Wallet, Hotel, Utensils, Bus, Ticket, PlusCircle, ShieldAlert } from 'lucide-react'
+import { budgetService } from '../api/trips'
 
 const COLORS = ['#0E7490', '#F4623A', '#7FC7CB', '#FF8A65', '#0B5D74', '#93A5B8']
 const HOTEL_RATE = { Budget: 30, Standard: 70, Luxury: 180 }
@@ -14,7 +15,44 @@ export default function BudgetCalculator() {
   const [tickets, setTickets] = useState(150)
   const [misc, setMisc] = useState(100)
 
+  const [apiResult, setApiResult] = useState(null)
+
+  useEffect(() => {
+    budgetService.calculate({
+      days,
+      travelers,
+      hotel_tier: hotelTier,
+      food_per_day: foodPerDay,
+      travel_cost: travelCost,
+      tickets,
+      misc,
+    }).then(({ data }) => setApiResult(data))
+      .catch(() => setApiResult(null))
+  }, [days, travelers, hotelTier, foodPerDay, travelCost, tickets, misc])
+
   const breakdown = useMemo(() => {
+    if (apiResult) {
+      const hotel = Number(apiResult.hotel_cost)
+      const food = Number(apiResult.food_cost)
+      const travel = Number(apiResult.travel_cost)
+      const entry = Number(apiResult.entry_tickets)
+      const m = Number(apiResult.miscellaneous)
+      const gst = Number(apiResult.gst)
+      const emergency = Number(apiResult.emergency_fund)
+      const total = Number(apiResult.total)
+      return {
+        hotel, food, travel, entry, misc: m, gst, emergency, total,
+        chart: [
+          { name: 'Hotel', value: Math.round(hotel) },
+          { name: 'Food', value: Math.round(food) },
+          { name: 'Travel', value: Math.round(travel) },
+          { name: 'Entry Tickets', value: Math.round(entry) },
+          { name: 'Misc', value: Math.round(m) },
+          { name: 'GST + Emergency', value: Math.round(gst + emergency) },
+        ],
+      }
+    }
+
     const hotel = HOTEL_RATE[hotelTier] * days
     const food = foodPerDay * days * travelers
     const travel = travelCost * travelers
@@ -35,7 +73,7 @@ export default function BudgetCalculator() {
         { name: 'GST + Emergency', value: Math.round(gst + emergency) },
       ],
     }
-  }, [days, travelers, hotelTier, foodPerDay, travelCost, tickets, misc])
+  }, [apiResult, days, travelers, hotelTier, foodPerDay, travelCost, tickets, misc])
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-12 lg:px-8">

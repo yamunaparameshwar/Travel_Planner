@@ -22,10 +22,12 @@ export default function PlanTrip() {
   const { addTrip } = useTrips()
   const navigate = useNavigate()
 
-  const onSubmit = (data) => {
-    const trip = addTrip({ ...data, title: data.destination })
+  const onSubmit = async (data) => {
+    const trip = await addTrip({ ...data, title: data.destination })
     toast.success('Trip saved — generate an itinerary next')
-    navigate(`/ai-itinerary?tripId=${trip.id}`)
+    if (trip && trip.id) {
+      navigate(`/ai-itinerary?tripId=${trip.id}`)
+    }
   }
 
   return (

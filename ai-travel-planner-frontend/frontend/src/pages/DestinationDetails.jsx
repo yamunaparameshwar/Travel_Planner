@@ -1,13 +1,42 @@
+import { useEffect, useState } from 'react'
 import { useParams, NavLink } from 'react-router-dom'
 import { Star, MapPin, Sun, Calendar, Wallet, Heart, ArrowLeft } from 'lucide-react'
 import { getDestinationById } from '../data/destinations'
+import { destinationService } from '../api/destinations'
 import { useTrips } from '../context/TripContext'
 import EmptyState from '../components/common/EmptyState'
 
+const normalizeDestination = (d) => ({
+  ...d,
+  id: d.id,
+  name: d.name,
+  country: d.country,
+  state: d.state || '',
+  category: d.category,
+  description: d.description || '',
+  image: d.image || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+  rating: d.rating || 4.5,
+  reviews: d.reviews_count || d.reviews || 0,
+  avgBudget: d.avg_budget !== undefined ? Number(d.avg_budget) : (d.avgBudget || 1000),
+  bestSeason: d.best_season || d.bestSeason || 'All Year',
+  weather: d.weather || 'Pleasant',
+  lat: d.latitude !== undefined ? d.latitude : (d.lat || 0),
+  lng: d.longitude !== undefined ? d.longitude : (d.lng || 0),
+})
+
 export default function DestinationDetails() {
   const { id } = useParams()
-  const destination = getDestinationById(id)
+  const fallback = getDestinationById(id)
+  const [destination, setDestination] = useState(fallback ? normalizeDestination(fallback) : null)
   const { favorites, toggleFavorite } = useTrips()
+
+  useEffect(() => {
+    if (id) {
+      destinationService.get(id).then(({ data }) => {
+        if (data) setDestination(normalizeDestination(data))
+      }).catch(() => {/* keep fallback */})
+    }
+  }, [id])
 
   if (!destination) {
     return (

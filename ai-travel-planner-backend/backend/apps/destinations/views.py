@@ -1,6 +1,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Avg, Count, Exists, OuterRef, Value, FloatField
+from django.db.models.functions import Coalesce
 
 from .models import Destination, Review, Favorite, SearchHistory
 from .serializers import (
@@ -19,11 +21,24 @@ class DestinationViewSet(viewsets.ModelViewSet):
     PUT    /api/destinations/:id/
     DELETE /api/destinations/:id/
     """
-    queryset = Destination.objects.all().prefetch_related('reviews')
     permission_classes = [IsAdminOrReadOnly]
     filterset_class = DestinationFilter
     search_fields = ['name', 'country', 'state', 'description']
     ordering_fields = ['avg_budget', 'created_at', 'name']
+
+    def get_queryset(self):
+        user = self.request.user if (self.request and self.request.user.is_authenticated) else None
+        qs = Destination.objects.annotate(
+            annotated_rating=Coalesce(Avg('reviews__rating'), Value(0.0), output_field=FloatField()),
+            annotated_reviews_count=Count('reviews', distinct=True),
+        )
+        if user:
+            qs = qs.annotate(
+                annotated_is_favorited=Exists(
+                    Favorite.objects.filter(user=user, destination=OuterRef('pk'))
+                )
+            )
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

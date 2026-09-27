@@ -16,8 +16,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class DestinationSerializer(serializers.ModelSerializer):
-    rating = serializers.ReadOnlyField()
-    reviews_count = serializers.ReadOnlyField()
+    rating = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
 
     class Meta:
@@ -29,7 +29,19 @@ class DestinationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
+    def get_rating(self, obj):
+        if hasattr(obj, 'annotated_rating'):
+            return round(obj.annotated_rating, 1)
+        return obj.rating
+
+    def get_reviews_count(self, obj):
+        if hasattr(obj, 'annotated_reviews_count'):
+            return obj.annotated_reviews_count
+        return obj.reviews_count
+
     def get_is_favorited(self, obj):
+        if hasattr(obj, 'annotated_is_favorited'):
+            return obj.annotated_is_favorited
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
             return False
