@@ -1,5 +1,12 @@
 # ✈️ AI Travel Planner
 
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Django](https://img.shields.io/badge/Django-5.0-092E20?style=for-the-badge&logo=django&logoColor=white)](https://djangoproject.com)
+[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-AI_1.5_Flash-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](file:///C:/Users/My%20Lap%2011/.gemini/antigravity/scratch/Travel_Planner/LICENSE)
+
 An AI-powered full-stack web application that helps users plan personalized trips based on their destination, budget, travel duration, travel type, and preferences.
 
 The application generates structured day-wise travel itineraries using Google Gemini AI, backed by a robust Django REST API backend and a responsive React frontend.
@@ -170,8 +177,18 @@ npm run build
 
 ---
 
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!  
+Feel free to check out the [Contributing Guidelines](CONTRIBUTING.md) to get started.
+
+---
+
 ## 👩‍💻 Author & License
 
 **K. Yamuna**  
 B.Tech – Computer Science and Engineering  
 GitHub: [https://github.com/yamunaparameshwar](https://github.com/yamunaparameshwar)
+
+This project is licensed under the [MIT License](LICENSE).
+
